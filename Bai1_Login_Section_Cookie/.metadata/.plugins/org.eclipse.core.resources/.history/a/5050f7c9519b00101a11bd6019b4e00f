@@ -1,0 +1,39 @@
+package com.clothingshop.servlet.control;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+@WebServlet("/logout_mvc")
+public class LogoutMVCServlet extends HttpServlet
+{
+	@Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    throws ServletException, IOException 
+	{
+        // Hủy Session 
+        HttpSession session = req.getSession(false);
+        if (session != null) 
+        {
+            session.invalidate(); // Xóa toàn bộ Session
+        }
+        
+     // Xóa Cookie 
+        Cookie[] cookies = req.getCookies();
+        if (cookies != null) 
+        {
+            for (Cookie cookie : cookies) 
+            {
+                if ("username".equals(cookie.getName()) || "password".equals(  cookie.getName()  ) ) 
+                {
+                    cookie.setMaxAge(0); // Xóa bằng cách set tuổi = 0
+                    resp.addCookie(cookie);
+                }
+            }
+        }
+
+        resp.sendRedirect("login_mvc.jsp"); // Redirect về login
+	}
+}

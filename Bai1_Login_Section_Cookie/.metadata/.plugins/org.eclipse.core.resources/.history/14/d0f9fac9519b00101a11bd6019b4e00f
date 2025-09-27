@@ -1,0 +1,58 @@
+package com.clothingshop.servlet.control;
+
+import jakarta.servlet.RequestDispatcher;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.*;
+
+import java.io.IOException;
+
+
+@WebServlet("/login_mvc")
+public class LoginMVCServlet  extends HttpServlet
+{
+	@Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
+    throws ServletException, IOException 
+	{
+        // Hiển thị form login khi truy cập get
+        RequestDispatcher dispatcher = req.getRequestDispatcher("/login_mvc.jsp") ;
+        dispatcher.forward(req, resp);
+    }
+	
+	@Override
+    protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
+    throws ServletException, IOException 
+	{
+        String username = req.getParameter("username");
+        String password = req.getParameter("password");
+
+        if ("admin".equals(username) && "123".equals(password)) 
+        {
+            // Tạo Session và lưu user 
+            HttpSession session = req.getSession();
+            session.setAttribute("user", username);
+
+            // Nếu chọn Remember Me, tạo Cookie 
+            if (req.getParameter("remember") != null) 
+            {
+                Cookie userCookie = new Cookie("username", username);
+                userCookie.setMaxAge(60 * 60 * 24 * 7); // 7 ngày 
+                resp.addCookie(userCookie);
+
+                Cookie passCookie = new Cookie("password", password);
+                passCookie.setMaxAge(60 * 60 * 24 * 7);
+                resp.addCookie(passCookie);
+            }
+
+            resp.sendRedirect("home_mvc.jsp"); // Redirect đến home
+        } 
+        else 
+        {
+            // nếu xuất hiện lỗi thì forward về login với thông báo
+            req.setAttribute("message", "Invalid username or password!");
+            RequestDispatcher dispatcher = req.getRequestDispatcher("/login_mvc.jsp");
+            dispatcher.forward(req, resp);
+        }
+    }
+}

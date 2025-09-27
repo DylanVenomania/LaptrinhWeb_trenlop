@@ -1,0 +1,6 @@
+INDEX VERSION 1.134+E:\Baitap1\.metadata\.plugins\org.eclipse.jdt.core
+3636588005.index
+3046593827.index
+3803894794.index
+768202996.index
+1865797976.index

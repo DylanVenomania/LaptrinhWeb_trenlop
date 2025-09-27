@@ -1,0 +1,114 @@
+package hcmute.vn.controller;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.util.List;
+
+import hcmute.vn.dao.CategoryDao;
+import hcmute.vn.dao.ProductDao;
+import hcmute.vn.model.Product;
+import hcmute.vn.model.User;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpSession;
+
+@WebServlet(name = "AdminProductServlet", value = "/admin/products")
+public class AdminProductServlet extends HttpServlet
+{
+    private static final long serialVersionUID = 1L;
+    private ProductDao productDao;
+    private CategoryDao categoryDao;
+
+    public void init()
+    {
+        productDao = new ProductDao();
+        categoryDao = new CategoryDao();
+    }
+
+    private boolean ensureAdmin(HttpServletRequest request, HttpServletResponse response) throws IOException
+    {
+        HttpSession session = request.getSession(false);
+        if (session == null) { response.sendRedirect(request.getContextPath() + "/jsp/login.jsp"); return false; }
+        User user = (User) session.getAttribute("user");
+        if (user == null || user.getRole() == null || !"admin".equalsIgnoreCase(user.getRole()))
+        {
+            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+            return false;
+        }
+        return true;
+    }
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+    {
+        if (!ensureAdmin(request, response)) return;
+        String action = request.getParameter("action");
+        try
+        {
+            if (action == null || action.isEmpty())
+            {
+                List<Product> products = productDao.findAll();
+                request.setAttribute("products", products);
+                request.getRequestDispatcher("/jsp/admin-products.jsp").forward(request, response);
+            }
+            else if ("new".equals(action))
+            {
+                request.setAttribute("categories", categoryDao.findAll());
+                request.getRequestDispatcher("/jsp/admin-product-form.jsp").forward(request, response);
+            }
+            else if ("edit".equals(action))
+            {
+                int id = Integer.parseInt(request.getParameter("id"));
+                Product p = productDao.findById(id);
+                request.setAttribute("product", p);
+                request.setAttribute("categories", categoryDao.findAll());
+                request.getRequestDispatcher("/jsp/admin-product-form.jsp").forward(request, response);
+            }
+            else if ("delete".equals(action))
+            {
+                int id = Integer.parseInt(request.getParameter("id"));
+                productDao.delete(id);
+                response.sendRedirect(request.getContextPath() + "/admin/products");
+            }
+        }
+        catch (SQLException e)
+        {
+            throw new ServletException(e);
+        }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException
+    {
+        if (!ensureAdmin(request, response)) return;
+        String idStr = request.getParameter("id");
+        int categoryId = Integer.parseInt(request.getParameter("categoryId"));
+        String name = request.getParameter("name");
+        BigDecimal price = new BigDecimal(request.getParameter("price"));
+        String description = request.getParameter("description");
+        String imageUrl = request.getParameter("imageUrl");
+        try
+        {
+            if (idStr == null || idStr.isEmpty())
+            {
+                Product p = new Product(categoryId, name, price, description, imageUrl);
+                productDao.insert(p);
+            }
+            else
+            {
+                Product p = new Product(categoryId, name, price, description, imageUrl);
+                p.setId(Integer.parseInt(idStr));
+                productDao.update(p);
+            }
+            response.sendRedirect(request.getContextPath() + "/admin/products");
+        }
+        catch (SQLException e)
+        {
+            throw new ServletException(e);
+        }
+    }
+}
+
+

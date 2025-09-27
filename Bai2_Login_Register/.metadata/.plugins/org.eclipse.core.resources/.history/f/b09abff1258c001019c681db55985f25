@@ -1,0 +1,60 @@
+package hcmute.vn.dao;
+
+import hcmute.vn.model.User;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+public class UserDao 
+{
+    private String jdbcURL = "jdbc:sqlserver://localhost:1433;databaseName=WebFashionShop;encrypt=true;trustServerCertificate=true";
+    private String jdbcUsername = "sa"; // Thay bằng username SQL của bạn
+    private String jdbcPassword = "123456789"; // Thay bằng password SQL
+
+    protected Connection getConnection() 
+    {
+        Connection connection = null;
+        try {
+            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+            connection = DriverManager.getConnection(jdbcURL, jdbcUsername, jdbcPassword);
+        } 
+        catch (SQLException | ClassNotFoundException e) 
+        {
+            e.printStackTrace();
+        }
+        return connection;
+    }
+
+    public void registerUser(User user) throws SQLException {
+        String INSERT_USER_SQL = "INSERT INTO Users (username, password, email) VALUES (?, ?, ?);";
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USER_SQL)) {
+            preparedStatement.setString(1, user.getUsername());
+            preparedStatement.setString(2, user.getPassword());
+            preparedStatement.setString(3, user.getEmail());
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    public User loginUser(String username, String password) throws SQLException 
+    {
+        String SELECT_USER_SQL = "SELECT id, username, password, email FROM Users WHERE username = ? AND password = ?;";
+        User user = null;
+        try (Connection connection = getConnection();
+             PreparedStatement preparedStatement = connection.prepareStatement(SELECT_USER_SQL)) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setString(2, password);
+            ResultSet rs = preparedStatement.executeQuery();
+            if (rs.next()) {
+                user = new User();
+                user.setId(rs.getInt("id"));
+                user.setUsername(rs.getString("username"));
+                user.setPassword(rs.getString("password"));
+                user.setEmail(rs.getString("email"));
+            }
+        }
+        return user;
+    }
+}

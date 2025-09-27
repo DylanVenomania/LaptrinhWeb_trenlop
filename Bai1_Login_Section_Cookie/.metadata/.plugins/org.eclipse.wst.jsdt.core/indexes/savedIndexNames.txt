@@ -1,0 +1,8 @@
+INDEX VERSION 1.4+E:\Baitap1\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+768202996.index
+464854995.index
+3299796633.index
+1092604336.index
+3530475573.index
+2033188651.index
+1045790268.index
