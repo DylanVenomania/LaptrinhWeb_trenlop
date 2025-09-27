@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemesh>
+    <mapping path="/*" name="web" decorator="/decorators/web.jsp"/>
+    <mapping path="/profile/*" name="admin" decorator="/decorators/admin.jsp"/>
+    <mapping path="/uploads/*" exclude="true"/>
+</sitemesh>

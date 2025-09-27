@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<sitemesh>
+    <mapping path="/*" decorator="/WEB-INF/decorators/main.jsp"/>
+    <excludes path="/jsp/login.jsp"/>
+    <excludes path="/jsp/register.jsp"/>
+    <excludes path="/jsp/forgot.jsp"/>
+    <excludes path="/jsp/verify.jsp"/>
+</sitemesh>

@@ -1,0 +1,44 @@
+<%@ taglib prefix="sitemesh" uri="http://www.sitemesh.org/decorator\\" %>
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+    <title><sitemesh:title default="Web Fashion Shop"/></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .navbar { background-color: #ff6f61; }
+        .navbar .nav-link { color: white !important; }
+        .navbar .nav-link:hover { color: #e65b52 !important; }
+        .footer { background-color: #f8f9fa; padding: 10px 0; position: fixed; bottom: 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand text-white" href="${pageContext.request.contextPath}/">Web Fashion Shop</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="${pageContext.request.contextPath}/products">Products</a>
+                <% if (session.getAttribute("user") != null) { %>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/jsp/success.jsp">Profile</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/logout">Logout</a>
+                <% } else { %>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/jsp/login.jsp">Login</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/jsp/register.jsp">Register</a>
+                <% } %>
+                <% if ("admin".equals(((hcmute.vn.model.User) session.getAttribute("user")).getRole())) { %>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/categories">Manage Categories</a>
+                    <a class="nav-link" href="${pageContext.request.contextPath}/admin/products">Manage Products</a>
+                <% } %>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <sitemesh:body/>
+    </div>
+
+    <footer class="footer text-center">
+        <p>&copy; 2025 Web Fashion Shop. All rights reserved.</p>
+    </footer>
+</body>
+</html>
