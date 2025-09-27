@@ -13,6 +13,9 @@ create table Users (
     role nvarchar(20) not null default 'user',
     resetCode nvarchar(6) null,
     resetExpiry datetime null
+	fullname NVARCHAR(100) NULL,
+	phone NVARCHAR(20) NULL,
+	imageUrl NVARCHAR(255) NULL
 );
 go
 

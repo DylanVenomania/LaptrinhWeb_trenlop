@@ -10,4 +10,4 @@ create table Users (
     password nvarchar(50) not null,
     email nvarchar(100) not null unique
 );
-GO
+GOz
