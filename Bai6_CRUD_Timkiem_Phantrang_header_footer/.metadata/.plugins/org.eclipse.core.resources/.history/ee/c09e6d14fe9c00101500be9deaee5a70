@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <title>Quản lý Sản phẩm - Thêm/Sửa</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    
+    <h2 th:text="${product.id == null} ? 'Thêm Sản phẩm Mới' : 'Cập nhật Sản phẩm: ' + ${product.name}">Thêm Sản phẩm Mới</h2>
+
+    <form th:action="@{/admin/products/save}" th:object="${product}" method="post" enctype="multipart/form-data">
+        
+        <input type="hidden" th:field="*{id}" />
+        
+        <div class="row">
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label for="name" class="form-label fw-bold">Tên Sản phẩm <span class="text-danger">*</span></label>
+                    <input type="text" th:field="*{name}" id="name" 
+                           class="form-control"
+                           th:errorclass="is-invalid"
+                           required minlength="3" maxlength="255"> <div class="invalid-feedback" th:errors="*{name}">
+                        Lỗi Tên sản phẩm
+                    </div>
+                    <div class="form-text">Tối thiểu 3 ký tự, tối đa 255 ký tự.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="price" class="form-label fw-bold">Giá (VNĐ) <span class="text-danger">*</span></label>
+                    <input type="number" th:field="*{price}" id="price" 
+                           class="form-control"
+                           th:errorclass="is-invalid"
+                           required min="1000" step="1000">
+                    <div class="invalid-feedback" th:errors="*{price}">
+                        Lỗi Giá
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="category" class="form-label fw-bold">Danh mục <span class="text-danger">*</span></label>
+                    <select th:field="*{category}" id="category" 
+                            class="form-select"
+                            th:errorclass="is-invalid"
+                            required>
+                        <option th:value="null" selected>-- Chọn Danh mục --</option>
+                        <option th:each="cate : ${listCategories}" 
+                                th:value="${cate.id}" 
+                                th:text="${cate.name}">Danh mục</option>
+                    </select>
+                    <div class="invalid-feedback" th:errors="*{category}">
+                        Lỗi Danh mục
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-6">
+                <div class="mb-3">
+                    <label for="description" class="form-label fw-bold">Mô tả Sản phẩm <span class="text-danger">*</span></label>
+                    <textarea th:field="*{description}" id="description" 
+                              class="form-control" rows="5"
+                              th:errorclass="is-invalid"
+                              required minlength="10"></textarea>
+                    <div class="invalid-feedback" th:errors="*{description}">
+                        Lỗi Mô tả
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="imageFile" class="form-label fw-bold">Ảnh Sản phẩm <span th:if="${product.id == null}" class="text-danger">*</span></label>
+                    
+                    <input type="file" name="imageFile" id="imageFile" 
+                           class="form-control"
+                           th:classappend="${#fields.hasErrors('imageUrl')} ? 'is-invalid' : ''"
+                           accept="image/png, image/jpeg"> <div th:if="${product.id == null}" class="form-text">Bắt buộc phải có ảnh khi thêm mới. Định dạng: JPG, PNG.</div>
+
+                    <div th:if="${product.id != null and product.imageUrl != null}" class="mt-2">
+                        <img th:src="${product.imageUrl}" alt="Ảnh hiện tại" width="100" class="rounded shadow-sm" style="border: 1px solid var(--color-primary);">
+                        <input type="hidden" th:field="*{imageUrl}" /> </div>
+                    
+                    <div class="invalid-feedback" th:if="${#fields.hasErrors('imageUrl')}" th:errors="*{imageUrl}">
+                        Lỗi Ảnh sản phẩm
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-4" style="border-color: var(--color-primary);">
+        
+        <div class="d-flex justify-content-end">
+            <a th:href="@{/admin/products}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-times-circle me-1"></i> Hủy
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> 
+                <span th:text="${product.id == null} ? 'Thêm Sản phẩm' : 'Lưu Thay đổi'">Lưu</span>
+            </button>
+        </div>
+
+    </form>
+
+</div>
+</body>
+</html>

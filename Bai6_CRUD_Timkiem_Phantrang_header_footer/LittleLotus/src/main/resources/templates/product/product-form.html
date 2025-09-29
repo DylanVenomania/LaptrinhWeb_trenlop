@@ -11,7 +11,7 @@
     
     <h2 th:text="${product.id == null} ? 'Thêm Sản phẩm Mới' : 'Cập nhật Sản phẩm: ' + ${product.name}">Thêm Sản phẩm Mới</h2>
 
-    <form th:action="@{/admin/products/save}" th:object="${product}" method="post" enctype="multipart/form-data">
+    <form th:action="@{/admin/product/save}" th:object="${product}" method="post" enctype="multipart/form-data">
         
         <input type="hidden" th:field="*{id}" />
         
