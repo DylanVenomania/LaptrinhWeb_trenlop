@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <title>Quản lý Danh mục (AJAX)</title>
+</head>
+<body>
+
+<div layout:fragment="content">
+    
+    <h2 class="mb-4">Quản lý Danh mục Sản phẩm (AJAX CRUD)</h2>
+
+    <div class="d-flex justify-content-between mb-3">
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" id="addCategoryBtn">
+            <i class="fas fa-plus me-1"></i> Thêm Danh mục Mới
+        </button>
+    </div>
+
+    <table class="table table-hover table-bordered shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col">ID</th>
+                <th scope="col">Tên Danh mục</th>
+                <th scope="col">Mô tả</th>
+                <th scope="col">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody id="categoryTableBody">
+            <tr><td colspan="4" class="text-center">Đang tải dữ liệu...</td></tr>
+        </tbody>
+    </table>
+
+    <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="categoryForm">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title" id="categoryModalLabel"></h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="categoryId" name="id">
+                        <div class="mb-3">
+                            <label for="categoryName" class="form-label">Tên Danh mục</label>
+                            <input type="text" class="form-control" id="categoryName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="categoryDescription" class="form-label">Mô tả</label>
+                            <textarea class="form-control" id="categoryDescription" name="description"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                        <button type="submit" class="btn btn-primary" id="saveCategoryBtn">Lưu</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteConfirmModalLabel">Xác nhận Xóa</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Bạn có chắc chắn muốn xóa danh mục này?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Xóa</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+
+        const API_URL = /*[[@{/api/v1/categories}]]*/ '/api/v1/categories';
+        
+      
+        function renderCategoryTable(categories) {
+            const $tbody = $('#categoryTableBody');
+            $tbody.empty();
+            if (categories.length === 0) {
+                $tbody.append('<tr><td colspan="4" class="text-center">Không có danh mục nào.</td></tr>');
+                return;
+            }
+
+            categories.forEach(category => {
+                const row = `
+                    <tr id="row-${category.id}">
+                        <th scope="row">${category.id}</th>
+                        <td>${category.name}</td>
+                        <td>${category.description || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info edit-btn me-2" data-id="${category.id}">
+                                <i class="fas fa-edit"></i> Sửa
+                            </button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${category.id}">
+                                <i class="fas fa-trash"></i> Xóa
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                $tbody.append(row);
+            });
+        }
+        
+      
+        function loadCategories() {
+            $.ajax({
+                url: API_URL,
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    renderCategoryTable(data);
+                },
+                error: function(xhr) {
+                    $('#categoryTableBody').html('<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu. Vui lòng kiểm tra API.</td></tr>');
+                }
+            });
+        }
+
+        // --- 3. XỬ LÝ FORM THÊM/SỬA (CREATE/UPDATE) ---
+        $('#categoryForm').submit(function(e) {
+            e.preventDefault();
+            const categoryId = $('#categoryId').val();
+            const url = categoryId ? API_URL + '/' + categoryId : API_URL;
+            const method = categoryId ? 'PUT' : 'POST';
+            
+            const categoryData = {
+                id: categoryId ? parseInt(categoryId) : null,
+                name: $('#categoryName').val(),
+                description: $('#categoryDescription').val()
+            };
+            
+            $.ajax({
+                url: url,
+                type: method,
+                contentType: 'application/json',
+                data: JSON.stringify(categoryData),
+                success: function(data) {
+                    $('#categoryModal').modal('hide');
+                    loadCategories(); 
+                    alert(categoryId ? 'Cập nhật danh mục thành công!' : 'Thêm mới danh mục thành công!');
+                },
+                error: function(xhr) {
+                
+                    const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.statusText) : xhr.statusText;
+                    alert('Thao tác thất bại: ' + errorMsg);
+                }
+            });
+        });
+
+       
+        $('#addCategoryBtn').click(function() {
+            $('#categoryModalLabel').text('Thêm Danh mục Mới');
+            $('#categoryForm')[0].reset(); 
+            $('#categoryId').val(''); 
+            $('#categoryModal').modal('show');
+        });
+
+        $(document).on('click', '.edit-btn', function() {
+            const id = $(this).data('id');
+            
+            $.ajax({
+                url: API_URL + '/' + id,
+                type: 'GET',
+                dataType: 'json',
+                success: function(category) {
+                    $('#categoryModalLabel').text('Cập nhật Danh mục ID: ' + id);
+                    $('#categoryId').val(category.id);
+                    $('#categoryName').val(category.name);
+                    $('#categoryDescription').val(category.description);
+                    $('#categoryModal').modal('show');
+                },
+                error: function() {
+                    alert('Không thể tải dữ liệu danh mục để chỉnh sửa.');
+                }
+            });
+        });
+        
+       
+        let categoryIdToDelete = null;
+
+        $(document).on('click', '.delete-btn', function() {
+            categoryIdToDelete = $(this).data('id');
+            $('#deleteConfirmModal').modal('show');
+        });
+
+        $('#confirmDeleteBtn').click(function() {
+            if (categoryIdToDelete) {
+                $.ajax({
+                    url: API_URL + '/' + categoryIdToDelete,
+                    type: 'DELETE',
+                    success: function() {
+                        $('#deleteConfirmModal').modal('hide');
+                        $(`#row-${categoryIdToDelete}`).fadeOut(500, function() {
+                            $(this).remove();
+                        });
+                        alert('Xóa thành công!');
+                        categoryIdToDelete = null;
+                        loadCategories(); 
+                    },
+                    error: function(xhr) {
+                        $('#deleteConfirmModal').modal('hide');
+                        alert('Xóa thất bại! Danh mục có thể đang chứa sản phẩm hoặc lỗi server.');
+                    }
+                });
+            }
+        });
+
+        $(document).ready(function() {
+            loadCategories();
+        });
+        /*]]>*/
+    </script>
+</div>
+</body>
+</html>

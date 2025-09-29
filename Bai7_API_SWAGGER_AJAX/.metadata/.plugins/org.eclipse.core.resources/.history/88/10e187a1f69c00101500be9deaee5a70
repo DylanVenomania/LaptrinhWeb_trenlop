@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <title th:text="${product.name} + ' - Little Lotus'"></title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <div class="row">
+            <div class="col-md-6">
+                <img th:src="@{${product.imageUrl} ? ${product.imageUrl} : '/images/default.png'}" 
+                     alt="Hình ảnh Sản phẩm" class="img-fluid" style="border: 1px solid #eee;">
+            </div>
+            
+            <div class="col-md-6">
+                <h1 th:text="${product.name}" class="display-5" style="color: #6a5acd;">Tên Sản Phẩm</h1>
+                <p class="text-muted">Danh mục: 
+                    <a th:href="@{/shop(category=${product.category.id})}" th:text="${product.category.name}">Tên danh mục</a>
+                </p>
+                
+                <h2 class="my-4 fw-bold" style="color: #c90066;" 
+                    th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 0, 'POINT')} + ' VNĐ'">Giá</h2>
+
+                <p class="lead">Mô tả:</p>
+                <div th:utext="${product.description} ? ${product.description} : 'Sản phẩm đang cập nhật mô tả.'" class="border p-3 bg-light">
+                    Mô tả chi tiết sản phẩm.
+                </div>
+                
+                <div class="mt-4">
+                    <a href="#" class="btn btn-lg btn-success me-3">Thêm vào giỏ hàng</a>
+                    <a th:href="@{/shop}" class="btn btn-lg btn-outline-secondary">Quay lại Shop</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

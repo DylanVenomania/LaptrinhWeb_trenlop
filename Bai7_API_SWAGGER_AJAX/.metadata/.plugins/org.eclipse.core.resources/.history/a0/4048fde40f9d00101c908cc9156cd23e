@@ -1,0 +1,5 @@
+package com.littlelotus.controller.rest;
+
+public class ProductRestController {
+
+}

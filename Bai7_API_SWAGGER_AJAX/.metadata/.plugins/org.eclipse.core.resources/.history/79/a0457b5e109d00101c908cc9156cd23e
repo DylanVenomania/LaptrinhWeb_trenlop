@@ -1,0 +1,88 @@
+package com.littlelotus.controller.rest;
+
+import com.littlelotus.model.Category;
+import com.littlelotus.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/v1/categories")
+@Tag(name = "Category API", description = "RESTful API cho quản lý Danh mục Sản phẩm")
+public class CategoryRestController {
+
+    @Autowired
+    private CategoryService categoryService;
+
+    // GET ALL (Lấy tất cả): /api/v1/categories
+    @Operation(summary = "Lấy tất cả danh mục", description = "Sử dụng cho AJAX/Frontend.")
+    @GetMapping
+    public ResponseEntity<List<Category>> getAllCategories() {
+        // Vì Service của bạn là phân trang, nên gọi findAll từ Repository hoặc tạo thêm phương thức findAll trong Service
+        // Tạm thời gọi findAll có sẵn trong CategoryRepository thông qua findPaginated (với pageSize lớn) nếu không có findAll
+        // Giả định bạn có thể lấy List<Category> từ repository.findAll()
+        List<Category> categories = categoryService.findAll(); // Cần tạo thêm phương thức này trong CategoryService
+        return ResponseEntity.ok(categories);
+    }
+    
+    // *LƯU Ý*: Do CategoryService của bạn chỉ có phân trang, bạn cần thêm phương thức sau vào CategoryService:
+    // public List<Category> findAll() { return categoryRepository.findAll(); }
+    
+    // GET BY ID: /api/v1/categories/{id}
+    @Operation(summary = "Lấy danh mục theo ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
+        Optional<Category> category = categoryService.getCategoryById(id);
+        
+        if (category.isPresent()) {
+            return ResponseEntity.ok(category.get());
+        }
+        return ResponseEntity.notFound().build(); 
+    }
+
+    // CREATE: /api/v1/categories
+    @Operation(summary = "Tạo mới danh mục")
+    @PostMapping
+    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+        category.setId(null); // Đảm bảo ID là null để Hibernate biết đây là CREATE
+        categoryService.saveCategory(category); 
+        return new ResponseEntity<>(category, HttpStatus.CREATED); // 201 Created
+    }
+
+    // UPDATE: /api/v1/categories/{id}
+    @Operation(summary = "Cập nhật danh mục")
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> updateCategory(@PathVariable Integer id, @RequestBody Category categoryDetails) {
+        Optional<Category> categoryOptional = categoryService.getCategoryById(id);
+
+        if (categoryOptional.isPresent()) {
+            Category category = categoryOptional.get();
+            // Cập nhật các trường
+            category.setName(categoryDetails.getName());
+            category.setDescription(categoryDetails.getDescription());
+            
+            categoryService.saveCategory(category); 
+            return ResponseEntity.ok(category);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    // DELETE: /api/v1/categories/{id}
+    @Operation(summary = "Xóa danh mục")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
+        Optional<Category> categoryOptional = categoryService.getCategoryById(id);
+        
+        if (categoryOptional.isPresent()) {
+            categoryService.deleteCategory(id);
+            return ResponseEntity.noContent().build(); // 204 No Content
+        }
+        return ResponseEntity.notFound().build();
+    }
+}

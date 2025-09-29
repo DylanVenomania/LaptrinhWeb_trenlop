@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <title layout:title-document="Little Lotus WebShop"></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <style>
+        .little-lotus-header { 
+            background-color: #f7f3f0; /* Màu aesthetic nhẹ nhàng */ 
+            padding: 15px 0;
+        }
+        .footer {
+            background-color: #e0e0e0;
+            padding: 10px 0;
+            text-align: center;
+            font-size: 0.85em;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="little-lotus-header shadow-sm">
+        <div class="container d-flex justify-content-between align-items-center">
+            <h1 class="logo"><a th:href="@{/}" style="color: #6a5acd; text-decoration: none;">Little Lotus 🌸</a></h1>
+            <nav>
+                <a th:href="@{/categories}" class="btn btn-outline-secondary me-2">Quản lý Danh mục</a>
+                <img th:src="@{/images/my-profile.jpg}" alt="Hình của Sinh viên" style="width: 40px; height: 40px; border-radius: 50%;">
+            </nav>
+        </div>
+    </header>
+    
+    <main class="container my-4">
+        <div layout:fragment="content">
+            </div>
+    </main>
+
+    <footer class="footer mt-auto">
+        <div class="container">
+            <p>&copy; <span th:text="${#dates.year(#dates.createNow())}">2024</span> | Project Web Thời Trang Little Lotus | Sinh viên thực hiện: **[Tên Sinh viên] - [Mã số Sinh viên]**</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

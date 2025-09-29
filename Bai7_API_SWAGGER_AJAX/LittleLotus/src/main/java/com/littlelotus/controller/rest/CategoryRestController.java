@@ -1,0 +1,76 @@
+package com.littlelotus.controller.rest;
+
+import com.littlelotus.model.Category;
+import com.littlelotus.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List; 
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/v1/categories")
+@Tag(name = "Category API", description = "RESTful API cho quản lý Danh mục Sản phẩm")
+public class CategoryRestController {
+
+    @Autowired
+    private CategoryService categoryService;
+
+    @Operation(summary = "Lấy tất cả danh mục")
+    @GetMapping
+    public ResponseEntity<List<Category>> getAllCategories() {
+        List<Category> categories = categoryService.findAll(); 
+        return ResponseEntity.ok(categories);
+    }
+    
+    @Operation(summary = "Lấy danh mục theo ID")
+    @GetMapping("/{id}")
+    public ResponseEntity<Category> getCategoryById(@PathVariable Integer id) {
+        Optional<Category> category = categoryService.getCategoryById(id);
+        
+        if (category.isPresent()) {
+            return ResponseEntity.ok(category.get());
+        }
+        return ResponseEntity.notFound().build(); 
+    }
+
+    @Operation(summary = "Tạo mới danh mục")
+    @PostMapping
+    public ResponseEntity<Category> createCategory(@RequestBody Category category) {
+        category.setId(null); 
+        categoryService.saveCategory(category); 
+        return new ResponseEntity<>(category, HttpStatus.CREATED);
+    }
+
+    @Operation(summary = "Cập nhật danh mục")
+    @PutMapping("/{id}")
+    public ResponseEntity<Category> updateCategory(@PathVariable Integer id, @RequestBody Category categoryDetails) {
+        Optional<Category> categoryOptional = categoryService.getCategoryById(id);
+
+        if (categoryOptional.isPresent()) {
+            Category category = categoryOptional.get();
+            category.setName(categoryDetails.getName());
+            category.setDescription(categoryDetails.getDescription()); 
+            
+            categoryService.saveCategory(category); 
+            return ResponseEntity.ok(category);
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    @Operation(summary = "Xóa danh mục")
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteCategory(@PathVariable Integer id) {
+        Optional<Category> categoryOptional = categoryService.getCategoryById(id);
+        
+        if (categoryOptional.isPresent()) {
+            categoryService.deleteCategory(id);
+            return ResponseEntity.noContent().build(); 
+        }
+        return ResponseEntity.notFound().build();
+    }
+}
