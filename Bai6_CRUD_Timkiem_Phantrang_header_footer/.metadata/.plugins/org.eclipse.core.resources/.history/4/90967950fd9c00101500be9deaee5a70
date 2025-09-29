@@ -26,13 +26,6 @@ public class ProductController
     private CategoryService categoryService; 
 
    
-   
-    private void addCategoriesToModel(Model model) 
-    {
-        List<Category> categories = categoryService.findPaginated(1, Integer.MAX_VALUE, "name", "asc", null).getContent(); 
-        model.addAttribute("listCategories", categories); 
-    }
-
     @GetMapping("/admin/products")
     public String viewProductList(Model model, 
                                 @RequestParam(defaultValue = "1") int pageNo,
@@ -59,15 +52,15 @@ public class ProductController
         return "product/product-list"; 
     }
     
-    //hiển thị form Thêm mới
+    //hiển thị form
     @GetMapping("/admin/product/new")
     public String showNewProductForm(Model model) 
     {
         Product product = new Product();
-        
-        addCategoriesToModel(model); // Gọi helper method để thêm listCategories vào model
+        List<Category> categories = categoryService.findPaginated(1, Integer.MAX_VALUE, "name", "asc", null).getContent(); // Lấy tất cả categories
         
         model.addAttribute("product", product);
+        model.addAttribute("categories", categories);
         model.addAttribute("formTitle", "Thêm Sản phẩm Mới");
         return "product/product-form";
     }
@@ -89,16 +82,16 @@ public class ProductController
         return "redirect:/admin/products";
     }
 
-    // Hiển thị form Chỉnh sửa
+    // Hiển thị form
     @GetMapping("/admin/product/edit/{id}")
     public String showEditProductForm(@PathVariable(value = "id") Integer id, Model model, RedirectAttributes ra) 
     {
         Optional<Product> product = productService.getProductById(id);
         if (product.isPresent()) 
         {
-            addCategoriesToModel(model); // Gọi helper method để thêm listCategories vào model
-            
+            List<Category> categories = categoryService.findPaginated(1, Integer.MAX_VALUE, "name", "asc", null).getContent();
             model.addAttribute("product", product.get());
+            model.addAttribute("categories", categories);
             model.addAttribute("formTitle", "Chỉnh sửa Sản phẩm ID: " + id);
             return "product/product-form";
         } 
