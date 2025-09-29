@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layouts/layout}">
+<head>
+    <title>Quản lý Sản phẩm</title>
+</head>
+<body>
+    <div layout:fragment="content">
+        <h2 class="mb-4">Quản lý Sản phẩm (CRUD & Phân trang)</h2>
+
+        <div th:if="${message}" class="alert alert-success" role="alert" th:text="${message}"></div>
+        <div th:if="${error}" class="alert alert-danger" role="alert" th:text="${error}"></div>
+        
+        <div class="d-flex justify-content-between mb-3">
+            <a th:href="@{/product/new}" class="btn btn-primary">Thêm Sản phẩm Mới</a>
+            
+            <form th:action="@{/products}" method="get" class="d-flex">
+                <input type="text" name="keyword" th:value="${keyword}" class="form-control me-2" placeholder="Tìm kiếm theo Tên Sản phẩm..." required>
+                <input type="hidden" name="pageSize" th:value="${pageSize}">
+                <button type="submit" class="btn btn-outline-secondary">Tìm kiếm</button>
+                <a th:href="@{/products(pageSize=${pageSize})}" class="btn btn-outline-danger ms-2">Xóa Filter</a>
+            </form>
+        </div>
+
+        <table class="table table-bordered table-striped">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Tên Sản phẩm</th>
+                    <th>Giá</th>
+                    <th>Danh mục</th> <th>Hình ảnh</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="product : ${listProducts}">
+                    <td th:text="${product.id}">1</td>
+                    <td th:text="${product.name}">Váy Lụa Aesthetic</td>
+                    <td th:text="${#numbers.formatDecimal(product.price, 0, 'COMMA', 2, 'POINT')} + ' VNĐ'">1,500,000.00 VNĐ</td>
+                    <td th:text="${product.category.name}">Thời Trang Nữ</td> 
+                    <td>
+                        <img th:src="@{${product.imageUrl} ? ${product.imageUrl} : '/images/default.png'}" 
+                             alt="Product Image" style="width: 50px; height: 50px; object-fit: cover;">
+                    </td>
+                    <td>
+                        <a th:href="@{/product/edit/{id}(id=${product.id})}" class="btn btn-sm btn-info me-2">Sửa</a>
+                        <a th:href="@{/product/delete/{id}(id=${product.id})}" class="btn btn-sm btn-danger"
+                           onclick="return confirm('Bạn có chắc chắn muốn xóa Sản phẩm này không?');">Xóa</a>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div th:if="${totalPages > 0}" class="row">
+            <div class="col-sm-12 text-center">
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        <li th:class="${currentPage == 1 ? 'page-item disabled' : 'page-item'}">
+                            <a th:href="@{/products(pageNo=${currentPage - 1}, pageSize=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword})}" 
+                               class="page-link">Trước</a>
+                        </li>
+                        <li th:each="i: ${#numbers.sequence(1, totalPages)}" 
+                            th:class="${currentPage == i ? 'page-item active' : 'page-item'}">
+                            <a th:href="@{/products(pageNo=${i}, pageSize=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword})}" 
+                               class="page-link" th:text="${i}">1</a>
+                        </li>
+                        <li th:class="${currentPage == totalPages ? 'page-item disabled' : 'page-item'}">
+                            <a th:href="@{/products(pageNo=${currentPage + 1}, pageSize=${pageSize}, sortField=${sortField}, sortDir=${sortDir}, keyword=${keyword})}" 
+                               class="page-link">Tiếp</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

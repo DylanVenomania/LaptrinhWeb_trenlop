@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="org.eclipse.ui.texteditor.FindReplaceDialog">
+		<item key="casesensitive" value="false"/>
+		<item key="wholeword" value="false"/>
+		<item key="isRegEx" value="false"/>
+		<item key="selection" value="th:classappend"/>
+		<list key="findhistory">
+			<item value="video-feed"/>
+			<item value="${videos}"/>
+			<item value="footer"/>
+			<item value="div class=&quot;header"/>
+			<item value="Long uploaderId, Long categoryId"/>
+			<item value="&lt;/video&gt;"/>
+			<item value="&lt;video&gt;"/>
+			<item value="&lt;a th:href=&quot;@{/admin}&quot; class=&quot;list-group-item&quot;"/>
+		</list>
+		<list key="replacehistory">
+		</list>
+	</section>
+</section>

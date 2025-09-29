@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" 
+          rel="stylesheet" xintegrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" 
+          crossorigin="anonymous">
+    <!-- Đổi từ Poppins sang Quicksand để tương thích tốt với Tiếng Việt -->
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <title layout:title-default="Little Lotus Shop - Admin"></title>
+
+    <style>
+        /* Bảng màu Coastal Neutral */
+        :root {
+            --color-primary: #C4DADE; 
+            --color-accent: #B9D9D5; 
+            --color-background-main: #F9F0E7; 
+            --color-background-card: #ECF2F5; 
+            --color-text: #4A5568; 
+            --color-text-header: #2D3748; 
+            --color-edit: #FFF3E0; /* Vàng cát nhạt cho Sửa (Muted Sand) */
+            --color-delete: #F7E0E6; /* Hồng đất nhạt cho Xóa (Muted Rose) */
+            --border-radius-large: 1rem;
+            --border-radius-small: 0.5rem; 
+        }
+
+        body {
+            font-family: 'Quicksand', sans-serif; /* Áp dụng font Quicksand */
+            background-color: var(--color-background-main);
+            color: var(--color-text);
+        }
+
+        /* Tiêu đề H2 trong nội dung */
+        h2 {
+            font-weight: 600;
+            color: var(--color-text-header);
+            margin-bottom: 1.5rem;
+        }
+
+        /* Header Admin */
+        .header-admin {
+            background-color: white; 
+            box-shadow: 0 5px 15px -5px rgba(0, 0, 0, 0.05);
+        }
+        
+        /* LOGO CUSTOM */
+        .logo-title {
+            line-height: 1;
+            padding-top: 3px;
+        }
+        .logo-subtitle {
+            font-size: 0.8rem; /* Kích thước hợp lý */
+            font-weight: 400;
+            color: var(--color-accent); 
+            margin-top: 2px; /* Khoảng cách hợp lý với Little Lotus */
+            display: block;
+        }
+
+        /* Nút chung */
+        .btn {
+            border-radius: var(--border-radius-small);
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Nút Chính (Shop) */
+        .btn-primary {
+            background-color: var(--color-accent);
+            border-color: var(--color-accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--color-text);
+            border-color: var(--color-text);
+        }
+        
+        /* Nút Phụ (Admin Navigation) */
+        .btn-outline-secondary {
+            color: var(--color-text);
+            border-color: var(--color-primary);
+            background-color: white;
+        }
+        
+        .btn-outline-secondary:hover {
+            background-color: var(--color-primary);
+            color: var(--color-text-header);
+            border-color: var(--color-primary);
+        }
+        
+        /* GHI ĐÈ NÚT SỬA/XOÁ CHO ADMIN */
+        .btn-info {
+            background-color: var(--color-edit) !important;
+            border-color: var(--color-edit) !important;
+            color: var(--color-text-header) !important; /* Đảm bảo chữ dễ đọc */
+        }
+        .btn-info:hover {
+            background-color: #F8E0C4 !important; /* Tối hơn một chút khi hover */
+            border-color: #F8E0C4 !important;
+        }
+        
+        .btn-danger {
+            background-color: var(--color-delete) !important;
+            border-color: var(--color-delete) !important;
+            color: var(--color-text-header) !important;
+        }
+        .btn-danger:hover {
+            background-color: #E6C4CD !important; /* Tối hơn một chút khi hover */
+            border-color: #E6C4CD !important;
+        }
+
+        /* Form và Input đồng bộ */
+        .form-control, .form-select {
+            border-radius: var(--border-radius-small);
+            border-color: var(--color-primary);
+        }
+        .form-control:focus, .form-select:focus {
+            box-shadow: 0 0 0 0.25rem rgba(196, 218, 222, 0.5); /* Shadow nhẹ từ màu Primary */
+            border-color: var(--color-primary);
+        }
+
+        /* Bảng biểu */
+        .table {
+            border-radius: var(--border-radius-large);
+            overflow: hidden; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+            background-color: white;
+        }
+        .table thead th {
+            background-color: var(--color-background-card) !important;
+            color: var(--color-text-header);
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .table-striped > tbody > tr:nth-of-type(odd) {
+             background-color: var(--color-background-card);
+        }
+        
+        /* Alert/Message */
+        .alert {
+            border-radius: var(--border-radius-small);
+        }
+        .alert-success {
+            background-color: #E0F2F7; /* Tông màu xanh pastel */
+            color: #155724; 
+            border-color: #A9D18E;
+        }
+
+        /* Hình ảnh Avatar */
+        .rounded-circle {
+            border: 3px solid var(--color-primary);
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <header class="p-3 mb-4 header-admin">
+        <div class="container">
+            <div class="d-flex flex-wrap align-items-start justify-content-center justify-content-lg-start">
+                
+                <a th:href="@{/}" class="d-flex align-items-center mb-2 mb-lg-0 text-dark text-decoration-none me-4">
+                    <i class="fas fa-hand-holding-heart me-2 mt-1" style="font-size: 1.5rem; color: var(--color-accent);"></i>
+                    <div class="logo-title">
+                        <span class="fs-4 fw-bold">Little Lotus</span>
+                        <span class="logo-subtitle">Fashion Shop</span>
+                    </div>
+                </a>
+                
+                <nav class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 mt-2">
+                    <a th:href="@{/shop}" class="btn btn-primary me-3">
+                        <i class="fas fa-store"></i> Trang Shop
+                    </a>
+                    
+                    <a th:href="@{/admin/categories}" class="btn btn-outline-secondary me-2">
+                        <i class="fas fa-tags"></i> Quản lý Danh mục
+                    </a>
+                    
+                    <a th:href="@{/admin/products}" class="btn btn-outline-secondary">
+                        <i class="fas fa-box-open"></i> Quản lý Sản phẩm
+                    </a>
+                </nav>
+                
+                <div class="dropdown text-end ms-auto mt-2">
+                    <img th:src="@{/images/avatar.jpg}" alt="Sinh viên" width="40" height="40" class="rounded-circle shadow-sm"> 
+                </div>
+                
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="bg-white p-4 shadow-sm" style="border-radius: var(--border-radius-large);" layout:fragment="content">
+            </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" 
+            xintegrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" 
+            crossorigin="anonymous"></script>
+</body>
+</html>

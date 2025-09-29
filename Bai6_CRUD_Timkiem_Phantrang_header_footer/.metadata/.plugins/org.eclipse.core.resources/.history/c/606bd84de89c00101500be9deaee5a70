@@ -1,0 +1,5 @@
+package com.littlelotus.Repository;
+
+public interface CategoryRepository {
+
+}
