@@ -20,7 +20,7 @@ public class Product
     private String name;
 
     @Column(name = "price", nullable = false, precision = 18, scale = 2)
-    private BigDecimal price; 
+    private BigDecimal price; // Dùng BigDecimal cho tiền tệ
 
     @Column(name = "description", length = 1000)
     private String description;
@@ -28,8 +28,8 @@ public class Product
     @Column(name = "image_url", length = 500)
     private String imageUrl;
     
-
-    @ManyToOne(fetch = FetchType.LAZY) 
+  
+    @ManyToOne(fetch = FetchType.EAGER) 
     @JoinColumn(name = "category_id", nullable = false) 
     private Category category; 
 }

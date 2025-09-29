@@ -1,6 +1,6 @@
 package com.littlelotus.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties; 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties; // FIX: Ngắt vòng lặp
 import io.swagger.v3.oas.annotations.media.Schema; 
 import jakarta.persistence.*;
 import lombok.*;
@@ -14,7 +14,7 @@ import java.util.List;
 @EqualsAndHashCode(exclude = "products")
 @ToString(exclude = "products")
 @Schema(description = "Category Model: Đại diện cho một Danh mục sản phẩm.")
-
+// FIX: Bỏ qua trường products và các trường Hibernate/Jackson nội bộ khi serialization
 @JsonIgnoreProperties({"products", "handler", "hibernateLazyInitializer"})
 public class Category 
 {
@@ -35,12 +35,9 @@ public class Category
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product> products;
 
-
-    public String getDescription() 
-    { return this.description; }
-    public void setDescription(String description) 
-    { this.description = description; }
+    // FIX: Getter/Setter thủ công cho Lombok
+    public String getDescription() { return this.description; }
+    public void setDescription(String description) { this.description = description; }
     public String getName() { return this.name; }
-    public void setName(String name) 
-    { this.name = name; }
+    public void setName(String name) { this.name = name; }
 }

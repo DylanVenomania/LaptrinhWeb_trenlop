@@ -4,22 +4,21 @@
       layout:decorate="~{layouts/layout}">
 <head>
     <title>Quản lý Danh mục (AJAX)</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
 
 <div layout:fragment="content">
     
     <h2 class="mb-4">Quản lý Danh mục Sản phẩm (AJAX CRUD)</h2>
-    
-    <div id="alertMessage" class="alert d-none" role="alert"></div>
 
     <div class="d-flex justify-content-between mb-3">
+        <!-- Nút Thêm Mới - Mở Modal -->
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#categoryModal" id="addCategoryBtn">
             <i class="fas fa-plus me-1"></i> Thêm Danh mục Mới
         </button>
     </div>
 
+    <!-- Bảng Hiển thị Danh mục -->
     <table class="table table-hover table-bordered shadow-sm">
         <thead class="table-dark">
             <tr>
@@ -34,6 +33,7 @@
         </tbody>
     </table>
 
+    <!-- Modal Thêm/Sửa -->
     <div class="modal fade" id="categoryModal" tabindex="-1" aria-labelledby="categoryModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -44,24 +44,14 @@
                     </div>
                     <div class="modal-body">
                         <input type="hidden" id="categoryId" name="id">
-                        
                         <div class="mb-3">
-                            <label for="categoryName" class="form-label">Tên Danh mục (<span class="text-danger">*</span>)</label>
-                            <input type="text" class="form-control" id="categoryName" name="name" required maxlength="100">
-                            <div class="invalid-feedback" id="nameFeedback"></div>
+                            <label for="categoryName" class="form-label">Tên Danh mục</label>
+                            <input type="text" class="form-control" id="categoryName" name="name" required>
                         </div>
-
                         <div class="mb-3">
                             <label for="categoryDescription" class="form-label">Mô tả</label>
                             <textarea class="form-control" id="categoryDescription" name="description"></textarea>
                         </div>
-                        
-                        <div class="mb-3">
-                            <label for="categoryIcon" class="form-label">Ảnh/Icon (Chỉ chấp nhận PNG, JPG)</label>
-                            <input type="file" class="form-control" id="categoryIcon" name="icon" accept=".png, .jpg, .jpeg">
-                            <div class="invalid-feedback" id="fileFeedback"></div>
-                        </div>
-
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -72,6 +62,7 @@
         </div>
     </div>
     
+    <!-- Modal Xác nhận Xóa -->
     <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-sm">
             <div class="modal-content">
@@ -80,7 +71,7 @@
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    Bạn có chắc chắn muốn xóa danh mục <strong id="deleteCategoryName"></strong> này?
+                    Bạn có chắc chắn muốn xóa danh mục này?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
@@ -91,35 +82,23 @@
     </div>
 
     <script th:inline="javascript">
-  
+        /*<![CDATA[*/
+        // Đã sửa lỗi API_URL để đảm bảo không bị lỗi context path
         const API_URL = '/api/v1/categories';
         
-
-        function showMessage(message, type = 'success') {
-            const $alert = $('#alertMessage');
-            $alert.removeClass('d-none alert-success alert-danger');
-            $alert.addClass(`alert-${type}`);
-            $alert.text(message);
-            
-            setTimeout(() => {
-                $alert.addClass('d-none');
-            }, 5000);
-            
- 
-            console.log(`[Admin Log] ${type.toUpperCase()}: ${message}`);
-        }
-        
-
+        // --- 1. RENDER DỮ LIỆU ---
         function renderCategoryTable(categories) {
             const $tbody = $('#categoryTableBody');
             $tbody.empty();
             
+            // Kiểm tra dữ liệu: Nếu không phải mảng hoặc rỗng, hiển thị thông báo.
             if (!Array.isArray(categories) || categories.length === 0) {
                 $tbody.append('<tr><td colspan="4" class="text-center">Không có danh mục nào.</td></tr>');
                 return;
             }
 
             categories.forEach(category => {
+                // Đảm bảo không lỗi nếu description là null
                 const descriptionText = category.description ? category.description : 'N/A';
                 
                 const row = `
@@ -131,7 +110,7 @@
                             <button class="btn btn-sm btn-info edit-btn me-2" data-id="${category.id}">
                                 <i class="fas fa-edit"></i> Sửa
                             </button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="${category.id}" data-name="${category.name}">
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${category.id}">
                                 <i class="fas fa-trash"></i> Xóa
                             </button>
                         </td>
@@ -139,95 +118,40 @@
                 `;
                 $tbody.append(row);
             });
-            console.log(`[Admin Log] Đã tải và render ${categories.length} danh mục.`);
         }
         
-
+        // --- 2. TẢI DỮ LIỆU BAN ĐẦU (READ ALL) ---
         function loadCategories() {
-            console.log('[Admin Log] Bắt đầu tải danh sách danh mục.');
             $.ajax({
                 url: API_URL,
                 type: 'GET',
                 dataType: 'json',
                 success: function(data) {
+                    // Kiểm tra tính hợp lệ của dữ liệu trước khi render
                     if (data && Array.isArray(data)) {
                         renderCategoryTable(data);
                     } else {
                         $('#categoryTableBody').html('<tr><td colspan="4" class="text-center text-danger">Dữ liệu nhận được không hợp lệ.</td></tr>');
-                        console.error("[Admin Log] API trả về dữ liệu không phải là mảng:", data);
+                        console.error("API returned non-array data:", data);
                     }
                 },
                 error: function(xhr) {
                     const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.statusText) : xhr.statusText;
                     $('#categoryTableBody').html(`<tr><td colspan="4" class="text-center text-danger">Lỗi tải dữ liệu: ${errorMsg} (Mã: ${xhr.status})</td></tr>`);
-                    console.error("[Admin Log] Lỗi AJAX khi tải danh mục:", xhr);
+                    console.error("AJAX Error loading categories:", xhr);
                 }
             });
         }
-        
-        function validateForm() {
-            let isValid = true;
-            
-   
-            $('.form-control').removeClass('is-invalid is-valid');
-            
-       
-            const $nameInput = $('#categoryName');
-            const nameValue = $nameInput.val().trim();
-       
-            const nameRegex = /^[a-zA-Z0-9\sáàảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệđíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ]+$/;
-            
-            if (nameValue === "") {
-                $nameInput.addClass('is-invalid');
-                $('#nameFeedback').text('Tên danh mục không được để trống.');
-                isValid = false;
-            } else if (!nameRegex.test(nameValue)) {
-                $nameInput.addClass('is-invalid');
-                $('#nameFeedback').text('Tên danh mục không được chứa ký tự đặc biệt.');
-                isValid = false;
-            } else {
-                $nameInput.addClass('is-valid');
-            }
-            
-            const $fileInput = $('#categoryIcon');
-            const file = $fileInput[0].files[0];
-            if (file) {
-                const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
-                if (!allowedTypes.includes(file.type)) {
-                    $fileInput.addClass('is-invalid');
-                    $('#fileFeedback').text('File không hợp lệ. Chỉ chấp nhận định dạng .png, .jpg, .jpeg.');
-                    isValid = false;
-                } else {
-                    $fileInput.addClass('is-valid');
-                }
-            }
-            
-            return isValid;
-        }
-        
-    
-        function resetFormAndFeedback() {
-            $('#categoryForm')[0].reset(); 
-            $('.form-control').removeClass('is-invalid is-valid');
-            $('#categoryId').val(''); 
-            $('#categoryIcon').val(''); 
-        }
 
+        // --- 3. XỬ LÝ FORM THÊM/SỬA (CREATE/UPDATE) ---
         $('#categoryForm').submit(function(e) {
             e.preventDefault();
-            
-            if (!validateForm()) {
-                showMessage('Lỗi nhập liệu: Vui lòng kiểm tra lại các trường có đánh dấu đỏ.', 'danger');
-                return;
-            }
-
             const categoryId = $('#categoryId').val();
-            const isUpdate = !!categoryId;
-            const url = isUpdate ? API_URL + '/' + categoryId : API_URL;
-            const method = isUpdate ? 'PUT' : 'POST';
+            const url = categoryId ? API_URL + '/' + categoryId : API_URL;
+            const method = categoryId ? 'PUT' : 'POST';
             
             const categoryData = {
-                id: isUpdate ? parseInt(categoryId) : null,
+                id: categoryId ? parseInt(categoryId) : null,
                 name: $('#categoryName').val(),
                 description: $('#categoryDescription').val()
             };
@@ -240,27 +164,23 @@
                 success: function(data) {
                     $('#categoryModal').modal('hide');
                     loadCategories(); 
-                    const msg = isUpdate ? `Cập nhật danh mục ID ${categoryId} thành công!` : `Thêm mới danh mục ID ${data.id} thành công!`;
-                    showMessage(msg, 'success');
+                    alert(categoryId ? 'Cập nhật danh mục thành công!' : 'Thêm mới danh mục thành công!');
                 },
                 error: function(xhr) {
                     const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.statusText) : xhr.statusText;
-                    showMessage(`Thao tác ${isUpdate ? 'cập nhật' : 'thêm mới'} thất bại: ${errorMsg} (Mã: ${xhr.status})`, 'danger');
+                    alert('Thao tác thất bại: ' + errorMsg);
                 }
             });
         });
 
-
-        
-  
+        // --- 4. MỞ MODAL THÊM/SỬA ---
         $('#addCategoryBtn').click(function() {
-            resetFormAndFeedback();
             $('#categoryModalLabel').text('Thêm Danh mục Mới');
+            $('#categoryForm')[0].reset(); 
+            $('#categoryId').val(''); 
             $('#categoryModal').modal('show');
-            console.log('[Admin Log] Mở modal Thêm mới.');
         });
-        
-   
+
         $(document).on('click', '.edit-btn', function() {
             const id = $(this).data('id');
             
@@ -269,32 +189,26 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function(category) {
-                    resetFormAndFeedback(); 
                     $('#categoryModalLabel').text('Cập nhật Danh mục ID: ' + id);
                     $('#categoryId').val(category.id);
                     $('#categoryName').val(category.name);
                     $('#categoryDescription').val(category.description);
                     $('#categoryModal').modal('show');
-                    console.log(`[Admin Log] Tải dữ liệu danh mục ID ${id} thành công.`);
                 },
                 error: function() {
-                    showMessage('Không thể tải dữ liệu danh mục để chỉnh sửa.', 'danger');
+                    alert('Không thể tải dữ liệu danh mục để chỉnh sửa.');
                 }
             });
         });
         
-
+        // --- 5. XỬ LÝ XÓA (DELETE) ---
         let categoryIdToDelete = null;
 
         $(document).on('click', '.delete-btn', function() {
             categoryIdToDelete = $(this).data('id');
-            const categoryName = $(this).data('name');
-            $('#deleteCategoryName').text(categoryName);
             $('#deleteConfirmModal').modal('show');
-            console.log(`[Admin Log] Yêu cầu xóa danh mục ID ${categoryIdToDelete}.`);
         });
 
-     
         $('#confirmDeleteBtn').click(function() {
             if (categoryIdToDelete) {
                 $.ajax({
@@ -304,25 +218,23 @@
                         $('#deleteConfirmModal').modal('hide');
                         $(`#row-${categoryIdToDelete}`).fadeOut(500, function() {
                             $(this).remove();
-                            loadCategories(); 
                         });
-                        showMessage(`Xóa danh mục ID ${categoryIdToDelete} thành công!`, 'success');
                         categoryIdToDelete = null;
+                        loadCategories(); 
+                        alert('Xóa thành công!');
                     },
                     error: function(xhr) {
                         $('#deleteConfirmModal').modal('hide');
-                        const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.statusText) : 'Lỗi server';
-                        showMessage(`Xóa danh mục thất bại: ${errorMsg} (ID: ${categoryIdToDelete})`, 'danger');
+                        alert('Xóa thất bại! Danh mục có thể đang chứa sản phẩm hoặc lỗi server.');
                     }
                 });
             }
         });
 
-
         $(document).ready(function() {
             loadCategories();
         });
-    
+        /*]]>*/
     </script>
 </div>
 </body>

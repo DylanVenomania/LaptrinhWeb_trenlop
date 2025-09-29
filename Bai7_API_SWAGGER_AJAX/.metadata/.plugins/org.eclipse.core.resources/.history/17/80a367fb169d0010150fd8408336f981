@@ -48,7 +48,7 @@
                         <div class="mb-3">
                             <label for="categoryName" class="form-label">Tên Danh mục (<span class="text-danger">*</span>)</label>
                             <input type="text" class="form-control" id="categoryName" name="name" required maxlength="100">
-                            <div class="invalid-feedback" id="nameFeedback"></div>
+                            <div class="invalid-feedback" id="nameFeedback">Tên danh mục không được trống và phải hợp lệ.</div>
                         </div>
 
                         <div class="mb-3">
@@ -59,7 +59,7 @@
                         <div class="mb-3">
                             <label for="categoryIcon" class="form-label">Ảnh/Icon (Chỉ chấp nhận PNG, JPG)</label>
                             <input type="file" class="form-control" id="categoryIcon" name="icon" accept=".png, .jpg, .jpeg">
-                            <div class="invalid-feedback" id="fileFeedback"></div>
+                            <div class="invalid-feedback" id="fileFeedback">File không hợp lệ. Chỉ chấp nhận định dạng .png, .jpg, .jpeg.</div>
                         </div>
 
                     </div>
@@ -91,10 +91,10 @@
     </div>
 
     <script th:inline="javascript">
-  
+        /*<![CDATA[*/
         const API_URL = '/api/v1/categories';
         
-
+        // Ghi Log cho Admin và hiển thị thông báo trên giao diện
         function showMessage(message, type = 'success') {
             const $alert = $('#alertMessage');
             $alert.removeClass('d-none alert-success alert-danger');
@@ -105,11 +105,10 @@
                 $alert.addClass('d-none');
             }, 5000);
             
- 
-            console.log(`[Admin Log] ${type.toUpperCase()}: ${message}`);
+            console.log(`[Admin Log] ${type.toUpperCase()}: ${message}`); // Ghi log chi tiết
         }
         
-
+        // --- 1. RENDER DỮ LIỆU ---
         function renderCategoryTable(categories) {
             const $tbody = $('#categoryTableBody');
             $tbody.empty();
@@ -128,7 +127,7 @@
                         <td>${category.name}</td>
                         <td>${descriptionText}</td>
                         <td>
-                            <button class="btn btn-sm btn-info edit-btn me-2" data-id="${category.id}">
+                            <button class="btn btn-sm btn-info edit-btn me-2" data-id="${category.id}" data-name="${category.name}">
                                 <i class="fas fa-edit"></i> Sửa
                             </button>
                             <button class="btn btn-sm btn-danger delete-btn" data-id="${category.id}" data-name="${category.name}">
@@ -142,9 +141,8 @@
             console.log(`[Admin Log] Đã tải và render ${categories.length} danh mục.`);
         }
         
-
+        // --- 2. TẢI DỮ LIỆU BAN ĐẦU (READ ALL) ---
         function loadCategories() {
-            console.log('[Admin Log] Bắt đầu tải danh sách danh mục.');
             $.ajax({
                 url: API_URL,
                 type: 'GET',
@@ -165,16 +163,14 @@
             });
         }
         
+        // --- 3. VALIDATION CỦA FORM (Bao gồm Validate Tên và Định dạng File) ---
         function validateForm() {
             let isValid = true;
             
-   
-            $('.form-control').removeClass('is-invalid is-valid');
-            
-       
+            // 3a. Validate Tên Danh mục (Không trống và không ký tự đặc biệt)
             const $nameInput = $('#categoryName');
             const nameValue = $nameInput.val().trim();
-       
+            // Regex cho phép chữ cái, số, khoảng trắng, và chữ tiếng Việt có dấu
             const nameRegex = /^[a-zA-Z0-9\sáàảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệđíìỉĩịóòỏõọôốồổỗộơớờởỡợúùủũụưứừửữựýỳỷỹỵ]+$/;
             
             if (nameValue === "") {
@@ -186,38 +182,41 @@
                 $('#nameFeedback').text('Tên danh mục không được chứa ký tự đặc biệt.');
                 isValid = false;
             } else {
-                $nameInput.addClass('is-valid');
+                $nameInput.removeClass('is-invalid').addClass('is-valid');
             }
             
+            // 3b. Validate File (Chỉ kiểm tra nếu có chọn file)
             const $fileInput = $('#categoryIcon');
             const file = $fileInput[0].files[0];
             if (file) {
                 const allowedTypes = ['image/png', 'image/jpeg', 'image/jpg'];
                 if (!allowedTypes.includes(file.type)) {
                     $fileInput.addClass('is-invalid');
-                    $('#fileFeedback').text('File không hợp lệ. Chỉ chấp nhận định dạng .png, .jpg, .jpeg.');
                     isValid = false;
                 } else {
-                    $fileInput.addClass('is-valid');
+                    $fileInput.removeClass('is-invalid').addClass('is-valid');
                 }
+            } else {
+                $fileInput.removeClass('is-invalid is-valid'); 
             }
             
             return isValid;
         }
-        
-    
+
+        // Hàm reset form và feedback
         function resetFormAndFeedback() {
             $('#categoryForm')[0].reset(); 
             $('.form-control').removeClass('is-invalid is-valid');
             $('#categoryId').val(''); 
-            $('#categoryIcon').val(''); 
+            $('#categoryIcon').val('');
         }
-
+        
+        // --- 4. XỬ LÝ FORM THÊM/SỬA (CREATE/UPDATE) ---
         $('#categoryForm').submit(function(e) {
             e.preventDefault();
             
             if (!validateForm()) {
-                showMessage('Lỗi nhập liệu: Vui lòng kiểm tra lại các trường có đánh dấu đỏ.', 'danger');
+                showMessage('Vui lòng kiểm tra lại dữ liệu nhập.', 'danger');
                 return;
             }
 
@@ -240,27 +239,24 @@
                 success: function(data) {
                     $('#categoryModal').modal('hide');
                     loadCategories(); 
-                    const msg = isUpdate ? `Cập nhật danh mục ID ${categoryId} thành công!` : `Thêm mới danh mục ID ${data.id} thành công!`;
+                    const msg = isUpdate ? `Cập nhật danh mục ID ${categoryId} thành công!` : `Thêm mới danh mục ID ${data.id || 'mới'} thành công!`;
                     showMessage(msg, 'success');
                 },
                 error: function(xhr) {
                     const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.statusText) : xhr.statusText;
-                    showMessage(`Thao tác ${isUpdate ? 'cập nhật' : 'thêm mới'} thất bại: ${errorMsg} (Mã: ${xhr.status})`, 'danger');
+                    showMessage(`Thao tác thất bại: ${errorMsg} (Mã: ${xhr.status})`, 'danger');
                 }
             });
         });
 
-
-        
-  
+        // --- 5. MỞ MODAL THÊM/SỬA VÀ TẢI DỮ LIỆU (Tối ưu hóa code lặp) ---
         $('#addCategoryBtn').click(function() {
             resetFormAndFeedback();
             $('#categoryModalLabel').text('Thêm Danh mục Mới');
             $('#categoryModal').modal('show');
-            console.log('[Admin Log] Mở modal Thêm mới.');
         });
-        
-   
+
+        // Sử dụng event delegation cho nút Sửa
         $(document).on('click', '.edit-btn', function() {
             const id = $(this).data('id');
             
@@ -275,7 +271,7 @@
                     $('#categoryName').val(category.name);
                     $('#categoryDescription').val(category.description);
                     $('#categoryModal').modal('show');
-                    console.log(`[Admin Log] Tải dữ liệu danh mục ID ${id} thành công.`);
+                    console.log(`[Admin Log] Đã tải dữ liệu danh mục ID ${id} để chỉnh sửa.`);
                 },
                 error: function() {
                     showMessage('Không thể tải dữ liệu danh mục để chỉnh sửa.', 'danger');
@@ -283,7 +279,7 @@
             });
         });
         
-
+        // --- 6. XỬ LÝ XÓA (DELETE) ---
         let categoryIdToDelete = null;
 
         $(document).on('click', '.delete-btn', function() {
@@ -291,10 +287,8 @@
             const categoryName = $(this).data('name');
             $('#deleteCategoryName').text(categoryName);
             $('#deleteConfirmModal').modal('show');
-            console.log(`[Admin Log] Yêu cầu xóa danh mục ID ${categoryIdToDelete}.`);
         });
 
-     
         $('#confirmDeleteBtn').click(function() {
             if (categoryIdToDelete) {
                 $.ajax({
@@ -312,17 +306,17 @@
                     error: function(xhr) {
                         $('#deleteConfirmModal').modal('hide');
                         const errorMsg = xhr.responseJSON ? (xhr.responseJSON.message || xhr.statusText) : 'Lỗi server';
-                        showMessage(`Xóa danh mục thất bại: ${errorMsg} (ID: ${categoryIdToDelete})`, 'danger');
+                        showMessage(`Xóa thất bại! ${errorMsg}`, 'danger');
                     }
                 });
             }
         });
 
-
+        // --- 7. TẢI DỮ LIỆU KHI TRANG ĐƯỢC LOAD ---
         $(document).ready(function() {
             loadCategories();
         });
-    
+        /*]]>*/
     </script>
 </div>
 </body>
