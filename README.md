@@ -1,4 +1,4 @@
-<img width="1715" height="791" alt="image" src="https://github.com/user-attachments/assets/87d10f33-15ca-431d-990c-278e7bde3bb5" /># Lập trình Web_Java 
+# Lập trình Web_Java 
 ### Tôn Hoàng Cầm - 23110186
 ### Bài 6 : Fashion web sop - Little Lotus ( phát triển thêm từ trang bán hàng quần áo bài 2,3,4 )
 #### Trang quản lý 
