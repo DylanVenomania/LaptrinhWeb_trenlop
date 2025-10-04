@@ -1,0 +1,61 @@
+package com.example.demo2.controller;
+
+import com.example.demo2.entity.User;
+import com.example.demo2.service.UserServiceImpl;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+public class HelloController 
+{
+
+    @Autowired
+    private UserServiceImpl userService;
+
+    @GetMapping("/hello")
+    public String hello() {
+        return "Hello, World! (Public access)";
+    }
+
+    @GetMapping("/admin")
+    public String admin() {
+        return "Admin Page (ROLE_ADMIN only)";
+    }
+
+    @GetMapping("/user")
+    public String user() {
+        return "User Page (ROLE_USER or ADMIN)";
+    }
+
+    @PostMapping("/register")
+    public String register(@Valid @RequestBody RegisterRequest request) 
+    {
+        User user = new User();
+        user.setUsername(request.getUsername());
+        user.setPassword(passwordEncoder().encode(request.getPassword()));
+        userService.saveUser(user); // Cần thêm role sau
+        return "User registered successfully";
+    }
+
+    @Bean
+    public PasswordEncoder passwordEncoder() 
+    {
+        return new BCryptPasswordEncoder();
+    }
+
+    static class RegisterRequest {
+        @NotBlank(message = "Username cannot be blank")
+        private String username;
+
+        @NotBlank(message = "Password cannot be blank")
+        private String password;
+
+        // Getters and Setters
+        public String getUsername() { return username; }
+        public void setUsername(String username) { this.username = username; }
+        public String getPassword() { return password; }
+        public void setPassword(String password) { this.password = password; }
+    }
+}

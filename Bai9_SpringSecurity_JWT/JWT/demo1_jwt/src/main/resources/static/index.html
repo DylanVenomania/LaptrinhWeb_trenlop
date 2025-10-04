@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>JWT Demo</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div id="loginForm">
+        <h2>Login</h2>
+        <input type="text" id="username" placeholder="Username"><br><br>
+        <input type="password" id="password" placeholder="Password"><br><br>
+        <button onclick="login()">Login</button>
+    </div>
+    <div id="welcome" style="display:none;">
+        <h2>Welcome</h2>
+        <p id="userInfo"></p>
+        <button onclick="loadProtected()">Load Protected Data</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+    <div id="result"></div>
+
+    <script>
+        let token = null;
+
+        function login() {
+            const username = $('#username').val();
+            const password = $('#password').val();
+            $.ajax({
+                url: '/api/authenticate',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ username, password }),
+                success: function(response) {
+                    token = response.token;
+                    $('#loginForm').hide();
+                    $('#welcome').show();
+                    $('#userInfo').text('Logged in as: ' + username);
+                },
+                error: function(xhr) {
+                    $('#result').text('Login failed: ' + xhr.responseText);
+                }
+            });
+        }
+
+        function loadProtected() {
+            $.ajax({
+                url: '/api/user/profile',
+                type: 'GET',
+                beforeSend: function(xhr) {
+                    xhr.setRequestHeader('Authorization', 'Bearer ' + token);
+                },
+                success: function(response) {
+                    $('#result').text(response);
+                },
+                error: function(xhr) {
+                    $('#result').text('Access denied: ' + xhr.statusText);
+                }
+            });
+        }
+
+        function logout() {
+            token = null;
+            $('#welcome').hide();
+            $('#loginForm').show();
+            $('#result').text('');
+            $('#userInfo').text('');
+        }
+    </script>
+</body>
+</html>
