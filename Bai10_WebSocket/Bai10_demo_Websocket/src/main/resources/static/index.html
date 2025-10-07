@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer Support Chat</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.6.1/sockjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+</head>
+<body>
+    <div>
+        <input type="text" id="sender" placeholder="Your name (e.g., Customer or Support)">
+        <input type="text" id="message" placeholder="Type message">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+    <div id="chat"></div>
+
+    <script>
+        var stompClient = null;
+
+        function connect() {
+            var socket = new SockJS('/ws');
+            stompClient = Stomp.over(socket);
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe('/topic/public', function (message) {
+                    showMessage(JSON.parse(message.body));
+                });
+            });
+        }
+
+        function validateInputs() {
+            var sender = document.getElementById('sender').value.trim();
+            var content = document.getElementById('message').value.trim();
+            if (!sender || sender.length < 3 || sender.length > 50) {
+                alert('Tên phải từ 3-50 ký tự, không để trống!');
+                return false;
+            }
+            if (!content) {
+                alert('Tin nhắn không được để trống!');
+                return false;
+            }
+            return true;
+        }
+
+        function sendMessage() {
+            if (!validateInputs()) return;
+            var msg = { 
+                sender: document.getElementById('sender').value, 
+                content: document.getElementById('message').value 
+            };
+            stompClient.send("/app/chat.send", {}, JSON.stringify(msg));
+            document.getElementById('message').value = ''; // Clear input sau gửi để tránh lặp
+        }
+
+        function showMessage(msg) {
+            var chat = document.getElementById('chat');
+            chat.innerHTML += '<p><strong>' + msg.sender + ':</strong> ' + msg.content + '</p>';
+            chat.scrollTop = chat.scrollHeight; // Auto scroll, reuse cho mọi message
+        }
+
+        connect(); // Auto connect
+    </script>
+</body>
+</html>

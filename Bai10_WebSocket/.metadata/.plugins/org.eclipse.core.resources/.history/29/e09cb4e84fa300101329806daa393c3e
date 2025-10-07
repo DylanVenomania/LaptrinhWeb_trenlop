@@ -1,0 +1,18 @@
+package com.example.demo.controller;
+
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.stereotype.Controller;
+
+@Controller
+public class ChatController 
+{
+
+    @MessageMapping("/chat.send") // Client gửi message đến đây
+    @SendTo("/topic/public") // Broadcast đến tất cả client subscribe topic này
+    public ChatMessage sendMessage(@Payload ChatMessage chatMessage) 
+    {
+        return chatMessage; // Trả về message để broadcast
+    }
+}

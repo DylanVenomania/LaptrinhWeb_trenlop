@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Admin Chat Logs</title>
+</head>
+<body>
+    <h1>Chat Logs</h1>
+    <ul>
+        <li th:each="log : ${logs}">
+            <strong th:text="${log.sender}"></strong>: <span th:text="${log.content}"></span>
+        </li>
+    </ul>
+</body>
+</html>
